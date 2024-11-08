@@ -1,10 +1,19 @@
--- create a list from static data to reference the list multiple times
 -- POSTGRESQL
-WITH EXISTING_NAMES as (
-	SELECT 
-	unnest(Array['NAME_1', 'NAME_2', 'NAME_3', 'NAME_4',
+-- Quick solution to deal with two different systems with each one its database
+-- Get a list of values and write as a SQL list from DATABASE1
+select '(' || string_agg(quote_literal(NAME), ', ') || ')'
+from (
+    select distinct NAME
+    from COMMON_NAME where REMOVED = 'F'
+	ORDER BY NAME asc
+) as LIST
+
+-- Copy the result from the query above and paste inside the brackets []
+with EXISTING_NAMES as (
+	select
+	unnest(array['NAME_1', 'NAME_2', 'NAME_3', 'NAME_4',
                 'NAME_5', 'Names go on.....']
-		  ) as name
+		  ) as NAME
 )
 select 
   C.NAME, 
@@ -16,4 +25,4 @@ select
   C.GROUP_NAME
 from 
   COMMON_NAME C
-where C.NAME NOT IN(select name from EXISTING_NAMES)
+where C.NAME not in (select NAME from EXISTING_NAMES)
